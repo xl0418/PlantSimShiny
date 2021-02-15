@@ -32,11 +32,11 @@ PlantSim_infplot <- function(sim_result, true.paras) {
   } else {
     # estimates for each time snap
     for (time_snap in time_snaps) {
-      data_spe1_x <- sim_result[, 1, time_snap[1]] + 1
-      data_spe1_y <- sim_result[, 1, time_snap[2]] + 1
+      data_spe1_x <- sim_result[, 1, time_snap[1]]
+      data_spe1_y <- sim_result[, 1, time_snap[2]]
 
-      data_spe2_x <- sim_result[, 2, time_snap[1]] + 1
-      data_spe2_y <- sim_result[, 2, time_snap[2]] + 1
+      data_spe2_x <- sim_result[, 2, time_snap[1]]
+      data_spe2_y <- sim_result[, 2, time_snap[2]]
 
       lmodel <- lm(log(data_spe1_y / data_spe1_x) ~ data_spe1_x + data_spe2_x)
       coefs <- rbind(coefs, c(coef(lmodel)[1], coef(lmodel)[2], coef(lmodel)[3]))
@@ -49,7 +49,7 @@ PlantSim_infplot <- function(sim_result, true.paras) {
 
   # correct the estimated growth rate
   coefs[, 1] <- exp(coefs[, 1] - 1)/surv_rate
-  coefs <- cbind(c(1:(tend - 1)), coefs)
+  coefs <- cbind(c(1:(tend - 1)), coefs, corr)
 
   if (nspe == 1) {
     colnames(coefs) <- c("Times", "Growth rate", "a")
@@ -57,10 +57,10 @@ PlantSim_infplot <- function(sim_result, true.paras) {
     true_para <- data.frame(values = true.paras[1:2],
                             names = c("growth rate", "a"))
   } else {
-    colnames(coefs) <- c("Times", "Growth rate", "a", "b")
+    colnames(coefs) <- c("Times", "Growth rate", "a", "b", "corr")
     # true parameters
-    true_para <- data.frame(values = true.paras,
-                            names = c("growth rate", "a", "b"))
+    true_para <- data.frame(values = c(true.paras, 0),
+                            names = c("growth rate", "a", "b", "corr"))
   }
 
 
@@ -79,7 +79,6 @@ PlantSim_infplot <- function(sim_result, true.paras) {
     fig3 <- plot_ly(coef_dataframe, x = ~Times, y = ~b)
     fig3 <- fig3 %>% add_lines(name = ~"Est. b")
     fig3 <- fig3 %>% add_lines(y = true.paras[3], line = list(color = "red", dash = "dash"), name = "True b")
-
     fig_inf1 <- subplot(fig1, fig2, fig3)
 
   }
@@ -149,9 +148,11 @@ PlantSim_infplot <- function(sim_result, true.paras) {
     fig2_fix <- plot_ly(coef_fix_dataframe, x = ~Times, y = ~b)
     fig2_fix <- fig2_fix %>% add_lines(name = ~"Est. b", line = list(color = "purple"))
     fig2_fix <- fig2_fix %>% add_lines(y = true.paras[3], line = list(color = "red", dash = "dash"), name = "True b")
+    fig_corr <- plot_ly(coef_dataframe, x = ~Times, y = ~corr)
+    fig_corr <- fig_corr %>% add_lines(name = ~"corr")
+    fig_corr <- fig_corr %>% add_lines(y = 0, line = list(color = "red", dash = "dot"), name = "No Corr")
 
-    fig_inf2 <- subplot(fig1_fix, fig2_fix)
-
+    fig_inf2 <- subplot(fig1_fix, fig2_fix, fig_corr)
   }
 
   fig_inf2 <- fig_inf2 %>% layout(
