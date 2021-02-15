@@ -31,6 +31,6 @@ PlantSim_sim <- function(paras) {
     surv_rate = surv_rate
   )
 
-  sim_result <- sim_result + rnorm(length(sim_result), 0, paras[7])
+  sim_result <- sim_result + round(rnorm(length(sim_result), 0, paras[7]))
   return(sim_result)
 }
