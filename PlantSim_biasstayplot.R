@@ -1,4 +1,16 @@
 source('~/CodeAtOxford/PlantSimShiny/PlantSim_sim.R', echo=TRUE)
+# paras = c(
+#   input$num_plot_tab3,
+#   as.numeric(input$num_spe_tab3),
+#   input$sim_time_tab3,
+#   input$growth_rate_tab3,
+#   input$st_portion_tab3,
+#   input$surv_rate_tab3,
+#   input$obs_err_tab3,
+#   input$con_com_tab3,
+#   input$hetero_com_tab3
+# )
+
 biasstay_plot <- function(paras_biasstay) {
   sim_result_list <- list()
   list_count = 1
@@ -6,6 +18,12 @@ biasstay_plot <- function(paras_biasstay) {
   stayrate_group <- seq(0, 1, paras_biasstay[5])
   stayrate_group_names <- paste("SR ", stayrate_group)
 
+  true.paras <- c(paras_biasstay[6],
+                  paras_biasstay[4],
+                  paras_biasstay[8],
+                  paras_biasstay[9])
+  surv_rate <- true.paras[1]
+  growth_rate <- true.paras[2]
   for (st_rate in stayrate_group) {
     paras[5] <- st_rate
     sim_result_list[[list_count]] <- PlantSim_sim(paras)
@@ -68,14 +86,8 @@ biasstay_plot <- function(paras_biasstay) {
 
   if (nspe == 1) {
     colnames(coefs) <- c("Times", "Growth rate", "a")
-    # true parameters
-    true_para <- data.frame(values = true.paras[1:2],
-                            names = c("growth rate", "a"))
   } else {
     colnames(coefs) <- c("Times", "Growth rate", "a", "b", "corr")
-    # true parameters
-    true_para <- data.frame(values = c(true.paras, 0),
-                            names = c("growth rate", "a", "b", "corr"))
   }
 
   coef_dataframe <- data.frame(coefs)
@@ -87,40 +99,53 @@ biasstay_plot <- function(paras_biasstay) {
                   legendgroup= ~group)
   fig1 <- fig1 %>% add_lines(name = ~group,
                              color = ~group,
-                             colors = "BrBG",
+                             colors = "PiYG",
                              showlegend = F)
-  fig1 <- fig1 %>% add_lines(y = true.paras[1],
+  fig1 <- fig1 %>% add_lines(y = growth_rate,
                              line = list(color = "red", dash = "dash"),
                              showlegend = F)
-
+  fig1 <- fig1 %>%
+    layout(annotations = list(x = 0.2 , y = 1.05, text = "Growth rate", showarrow = F,
+                              xref='paper', yref='paper'))
 
   if (nspe == 1) {
     fig2 <- plot_ly(coef_dataframe, x = ~Times, y = ~a, split = ~group,
                     legendgroup= ~group)
     fig2 <- fig2 %>% add_lines(name = ~group,
                                color = ~group,
-                               colors = "BrBG")
-    fig2 <- fig2 %>% add_lines(y = true.paras[2],
+                               colors = "PiYG")
+    fig2 <- fig2 %>% add_lines(y = true.paras[3],
                                line = list(color = "red", dash = "dash"),
                                showlegend = F)
+    fig2 <- fig2 %>%
+      layout(annotations = list(x = 0.2 , y = 1.05, text = "a", showarrow = F,
+                                xref='paper', yref='paper'))
     fig_inf1 <- subplot(fig1, fig2)
+
   } else {
     fig2 <- plot_ly(coef_dataframe, x = ~Times, y = ~a, split = ~group,
                     legendgroup= ~group)
     fig2 <- fig2 %>% add_lines(name = ~group,
                                color = ~group,
-                               colors = "BrBG",
+                               colors = "PiYG",
                                showlegend = F)
-    fig2 <- fig2 %>% add_lines(y = true.paras[2],
+    fig2 <- fig2 %>% add_lines(y = true.paras[3],
                                line = list(color = "red", dash = "dash"),
                                showlegend = F)
-    fig3 <- plot_ly(coef_dataframe, x = ~Times, y = ~b, split = ~group)
+    fig2 <- fig2 %>%
+      layout(annotations = list(x = 0.2 , y = 1.05, text = "a", showarrow = F,
+                                xref='paper', yref='paper'))
+    fig3 <- plot_ly(coef_dataframe, x = ~Times, y = ~b, split = ~group,
+                    legendgroup= ~group)
     fig3 <- fig3 %>% add_lines(name = ~group,
                                color = ~group,
-                               colors = "BrBG")
-    fig3 <- fig3 %>% add_lines(y = true.paras[3],
+                               colors = "PiYG")
+    fig3 <- fig3 %>% add_lines(y = true.paras[4],
                                line = list(color = "red", dash = "dash"),
                                showlegend = F)
+    fig3 <- fig3 %>%
+      layout(annotations = list(x = 0.2 , y = 1.05, text = "b", showarrow = F,
+                                xref='paper', yref='paper'))
     fig_inf1 <- subplot(fig1, fig2, fig3)
 
   }
@@ -178,14 +203,8 @@ biasstay_plot <- function(paras_biasstay) {
 
   if (nspe == 1) {
     colnames(coefs_fix) <- c("Times",  "a")
-    # true parameters
-    true_para_fix <- data.frame(values = true.paras[2],
-                                names = c("a"))
   } else {
     colnames(coefs_fix) <- c("Times", "a", "b")
-    # true parameters
-    true_para_fix <- data.frame(values = true.paras[2:3],
-                                names = c( "a", "b"))
   }
 
 
@@ -198,33 +217,50 @@ biasstay_plot <- function(paras_biasstay) {
     fig1_fix <- plot_ly(coef_fix_dataframe, x = ~Times, y = ~a, split = ~group)
     fig1_fix <- fig1_fix %>% add_lines(name = ~group,
                                        color = ~group,
-                                       colors = "BrBG")
-    fig1_fix <- fig1_fix %>% add_lines(y = true.paras[2],
+                                       colors = "PiYG")
+    fig1_fix <- fig1_fix %>% add_lines(y = true.paras[3],
                                        line = list(color = "red",
                                                    dash = "dash"),
                                        showlegend = F)
+    fig1_fix <- fig1_fix %>%
+      layout(annotations = list(x = 0.2 , y = 1.05, text = "a", showarrow = F,
+                                xref='paper', yref='paper'))
     fig_inf2 <- fig1_fix
   } else {
-    fig1_fix <- plot_ly(coef_fix_dataframe, x = ~Times, y = ~a, split = ~group)
+    fig1_fix <- plot_ly(coef_fix_dataframe, x = ~Times, y = ~a, split = ~group,
+                        legendgroup= ~group)
     fig1_fix <- fig1_fix %>% add_lines(name = ~group,
                                        color = ~group,
-                                       colors = "BrBG",
+                                       colors = "PiYG",
                                        showlegend = F)
-    fig1_fix <- fig1_fix %>% add_lines(y = true.paras[2],
+    fig1_fix <- fig1_fix %>% add_lines(y = true.paras[3],
                                        line = list(color = "red",
                                                    dash = "dash"),
                                        showlegend = F)
-    fig2_fix <- plot_ly(coef_fix_dataframe, x = ~Times, y = ~b, split = ~group)
+    fig1_fix <- fig1_fix %>%
+      layout(annotations = list(x = 0.2 , y = 1.05, text = "a", showarrow = F,
+                                xref='paper', yref='paper'))
+
+    fig2_fix <- plot_ly(coef_fix_dataframe, x = ~Times, y = ~b, split = ~group,
+                        legendgroup= ~group)
     fig2_fix <- fig2_fix %>% add_lines(name = ~group,
                                        color = ~group,
-                                       colors = "BrBG")
-    fig2_fix <- fig2_fix %>% add_lines(y = true.paras[3], line = list(color = "red", dash = "dash"), showlegend = F)
-    fig_corr <- plot_ly(coef_dataframe, x = ~Times, y = ~corr, split = ~group)
+                                       colors = "PiYG",
+                                       showlegend = F)
+    fig2_fix <- fig2_fix %>% add_lines(y = true.paras[4], line = list(color = "red", dash = "dash"), showlegend = F)
+    fig2_fix <- fig2_fix %>%
+      layout(annotations = list(x = 0.2 , y = 1.05, text = "b", showarrow = F,
+                                xref='paper', yref='paper'))
+
+    fig_corr <- plot_ly(coef_dataframe, x = ~Times, y = ~corr, split = ~group,
+                        legendgroup= ~group)
     fig_corr <- fig_corr %>% add_lines(name = ~group,
                                        color = ~group,
-                                       colors = "BrBG")
+                                       colors = "PiYG")
     fig_corr <- fig_corr %>% add_lines(y = 0, line = list(color = "red", dash = "dot"), showlegend = F)
-
+    fig_corr <- fig_corr %>%
+      layout(annotations = list(x = 0.2 , y = 1.05, text = "Corr", showarrow = F,
+                                xref='paper', yref='paper'))
     fig_inf2 <- subplot(fig1_fix, fig2_fix, fig_corr)
   }
 

@@ -2,8 +2,8 @@ PlantSim_infplot <- function(sim_result, true.paras) {
   nplot <- dim(sim_result)[1]
   nspe <- dim(sim_result)[2]
   tend <- dim(sim_result)[3]
-
-
+  surv_rate <- true.paras[1]
+  growth_rate <- true.paras[2]
   # Inference plots
   time_snaps <- list()
   for (i in c(1:(tend - 1))) {
@@ -54,12 +54,12 @@ PlantSim_infplot <- function(sim_result, true.paras) {
   if (nspe == 1) {
     colnames(coefs) <- c("Times", "Growth rate", "a")
     # true parameters
-    true_para <- data.frame(values = true.paras[1:2],
+    true_para <- data.frame(values = true.paras[2:3],
                             names = c("growth rate", "a"))
   } else {
     colnames(coefs) <- c("Times", "Growth rate", "a", "b", "corr")
     # true parameters
-    true_para <- data.frame(values = c(true.paras, 0),
+    true_para <- data.frame(values = c(true.paras[2:4], 0),
                             names = c("growth rate", "a", "b", "corr"))
   }
 

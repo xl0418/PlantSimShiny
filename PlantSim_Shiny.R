@@ -10,7 +10,8 @@ library(PlantSim)
 source('~/CodeAtOxford/PlantSimShiny/PlantSIm_plot.R', echo = TRUE)
 source('~/CodeAtOxford/PlantSimShiny/PlantSim_sim.R', echo = TRUE)
 source('~/CodeAtOxford/PlantSimShiny/PlantSim_infplot.R', echo = TRUE)
-source('~/CodeAtOxford/PlantSimShiny/PlantSim_biasstayplot.R', echo=TRUE)
+source('~/CodeAtOxford/PlantSimShiny/PlantSim_biasstayplot.R',
+       echo = TRUE)
 # Compute the current date
 
 # Design the header ----
@@ -267,7 +268,7 @@ body <- dashboardBody(### changing theme
         ))
       ),
 
-      # dispersal tab
+      # dispersal tab: Tab 3
       tabPanel(title = "Dispersal",
                fluidRow(
                  box(
@@ -298,7 +299,6 @@ body <- dashboardBody(### changing theme
                  column(
                    width = 3,
                    box(
-
                      title = "Parameter settings",
                      status = "danger",
                      solidHeader = TRUE,
@@ -314,10 +314,12 @@ body <- dashboardBody(### changing theme
 
                               column(
                                 6,
-                                numericInput("num_plot_tab3",
-                                             h5("Plots"),
-                                             value = 100,
-                                             step = 50)
+                                numericInput(
+                                  "num_plot_tab3",
+                                  h5("Plots"),
+                                  value = 100,
+                                  step = 50
+                                )
                               )),
 
                      fluidRow(column(
@@ -429,8 +431,7 @@ body <- dashboardBody(### changing theme
                    )
                  )
 
-               )
-               ),
+               )),
 
       # observation tab
       tabPanel(title = "Observation error",
@@ -641,7 +642,8 @@ server <- function(input, output, session) {
     } else {
       sim_result <- PlantSim_sim(parasInput$argu)
     }
-    true.paras <- c(input$growth_rate,
+    true.paras <- c(input$surv_rate,
+                    input$growth_rate,
                     input$con_com,
                     input$hetero_com)
     list(result = sim_result, trueparas = true.paras)
@@ -691,6 +693,8 @@ server <- function(input, output, session) {
   })
 
 
+
+
   output$growthrate_tab2 <- renderValueBox({
     valueBox(
       value = formatC(input$growth_rate, digits = 2, format = "f"),
@@ -725,7 +729,22 @@ server <- function(input, output, session) {
 
   })
 
-  # plot 1 on Tab dispersal
+  # plot 1 on Tab dispersal tab 3
+
+  output$hetero_tab3 = renderUI({
+    req(input$num_spe_tab3) # this makes sure Shiny waits until input$num_spe has been supplied. Avoids nasty error messages
+    if (input$num_spe_tab3 == "2") {
+      numericInput(
+        inputId = "hetero_com_tab3",
+        label = h5("Heterospecific competition (b):"),
+        value = 0.01,
+        min = 0,
+        max = 1,
+        step = 0.01# condition on the state
+      )
+    }
+
+  })
 
   parasInput_tab3 <- reactiveValues(argu = NULL)
 
@@ -757,10 +776,7 @@ server <- function(input, output, session) {
     } else {
       paras <- parasInput_tab3$argu
     }
-    true.paras_tab3 <- c(input$growth_rate_tab3,
-                    input$con_com_tab3,
-                    input$hetero_com_tab3)
-    list(paras = paras, trueparas = true.paras_tab3)
+    list(paras = paras)
   })
 
   output$biasstayplot <- renderPlotly({

@@ -14,7 +14,6 @@ PlantSim_plot <- function(sim_result) {
     return(list(fig_warning, fig_warning))
     } else {
     plots <- sort(sample(row_sub, size = 3))
-
     plants_data <- NULL
     colname_data <- NULL
     for (spe_ind in c(1:nspe)) {
