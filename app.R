@@ -7,11 +7,11 @@ library(dashboardthemes)
 library(shinyBS)
 library(icon)
 library(PlantSim)
-source('~/CodeAtOxford/PlantSimShiny/PlantSIm_plot.R', echo = TRUE)
-source('~/CodeAtOxford/PlantSimShiny/PlantSim_sim.R', echo = TRUE)
-source('~/CodeAtOxford/PlantSimShiny/PlantSim_infplot.R', echo = TRUE)
-source('~/CodeAtOxford/PlantSimShiny/PlantSim_biasstayplot.R',
-       echo = TRUE)
+source('PlantSIm_plot.R', echo = TRUE)
+source('PlantSim_sim.R', echo = TRUE)
+source('PlantSim_infplot.R', echo = TRUE)
+source('PlantSim_biasstayplot.R', echo = TRUE)
+source('PlantSim_biasobsplot.R', echo=TRUE)
 # Compute the current date
 
 # Design the header ----
@@ -135,7 +135,7 @@ body <- dashboardBody(### changing theme
                          "sim_time",
                          label = h5("Selec simulating time"),
                          min = 5,
-                         max = 20,
+                         max = 15,
                          value = 10,
                          width = 300
                        )
@@ -277,6 +277,7 @@ body <- dashboardBody(### changing theme
                    collapsible = TRUE,
                    solidHeader = TRUE,
                    width = 12,
+                   withMathJax(),
 
                    helpText(
                      h4(
@@ -290,8 +291,36 @@ body <- dashboardBody(### changing theme
                        'In the simulation model, the dispersal rate is correltaed to the stay rate. So, we show the parameter
                        estimates when varying the stay rates.'
                      )
-                   )
+                   ),
 
+                   helpText(
+                     h4(
+                       'The linear regression of the Ricker model is given by
+                       $$r_c = log(\\frac{N_{c, t+1}}{N_{c, t}}) = \\beta_0 - a N_{c, t} - b N_{h, t}. $$
+                       Using the data of \\(r_c\\), \\(N_{c, t}\\), \\(N_{h, t}\\), one can estimate \\(\\beta_0\\), \\(a\\), \\(b\\).'
+                     )
+                   ),
+
+                   helpText(
+                     h4(
+                       'However, incorporating dispersal changes the underlying mechanisms, i.e. the local density dependence.
+                       The true model used in the simulation actually yields
+                       $$N_{c, J, t+1} = \\delta N_{c, J, t}  e^{\\beta_0 - a N_{c,J, t} - b N_{h, J, t} }
+                       + \\frac{1}{L} \\sum_{m}^{L} (1 - \\delta) N_{c, m, t} e^{\\beta_0 - a N_{c,m, t} - b N_{h, m, t} }.$$
+                       The second term on the RHS represents the spatial effect, which reduces the explanationary power
+                       of the origional linear model.'
+                     )
+                   ),
+
+                   helpText(
+                     h4(
+                       'In the other extreme case that all plants join the global dispersal, the model collaps to a simple model, i.e. \\(\\delta = 0 \\)
+                       $$N_{c, J, t+1} = \\frac{1}{L} \\sum_{m}^{L} N_{c, m, t} e^{\\beta_0 - a N_{c,m, t} - b N_{h, m, t} } = E\\big( N_{c, m, t+1 }\\big).$$
+                       One can use the data of \\(r_c\\) and \\( log(N_{c, m, t}) \\) to predict the slope to be -1,
+                       $$r_c = log( \\frac{N_{c, m, t+1}}{N_{c, m, t}}) = log(E\\big( N_{c, m, t+1 }\\big)) - log(N_{c, m, t}).$$
+                       This model may provide a way to predict how much dispersal rate is expected.'
+                     )
+                   ),
                  )
                ),
 
@@ -391,7 +420,7 @@ body <- dashboardBody(### changing theme
                          "sim_time_tab3",
                          label = h5("Selec simulating time"),
                          min = 5,
-                         max = 20,
+                         max = 15,
                          value = 10,
                          width = 300
                        )
@@ -428,67 +457,199 @@ body <- dashboardBody(### changing theme
                      width = 12,
                      # Output: biasstayplot ----
                      plotlyOutput(outputId = "biasstayplotfixing")
+                   ),
+
+                   box(
+                     title = "Global disperal check",
+                     status = "info",
+                     collapsible = TRUE,
+                     solidHeader = TRUE,
+                     width = 12,
+                     # Output: glodisplot ----
+                     plotlyOutput(outputId = "glodisplot")
                    )
                  )
 
                )),
 
-      # observation tab
+      # observation tab: tab 4
       tabPanel(title = "Observation error",
                fluidRow(
+                 box(
+                   title = 'How does observation error affect the bias?',
+                   status = "info",
+                   collapsible = TRUE,
+                   solidHeader = TRUE,
+                   width = 12,
+
+                   helpText(
+                     h4(
+                       'Observation error is inevitable in empirical ecology studies.
+                       According to the linear regression model,
+                       $$b_{\\text{OLS}} = \\frac{Cov(x, y)}{\\sigma_{x}^2 + \\sigma_{\\text{obs}^2}}$$
+                       obervation error often leads to underestimation of the slope, indicating density dependence even when it is absent.'
+                     )
+                   ),
+                   helpText(
+                     h4(
+                       'In reality, it could be much more complicated in terms of the nature of spatial explicity.
+                       Dispersal could leads to unpredictable bias in parameter estimations. Here, we present how bias is related to
+                       the observation error using the explicitly spatial model.'
+                     )
+                   )
+
+                 )
+               ),
+
+               fluidRow(
                  column(
-                   10,
-                   offset = 1,
-                   helpText(h2('About')),
-                   helpText(
-                     h4(
-                       'This app is created by Liang Xu at Oxford, initiated by exploring a number of factors that
-                    influence on detecting density dependence in plant communities.'
-                     )
+                   width = 3,
+                   box(
+                     title = "Parameter settings",
+                     status = "danger",
+                     solidHeader = TRUE,
+                     collapsible = TRUE,
+                     width = 12,
+                     fluidRow(column(6,
+                                     selectInput(
+                                       "num_spe_tab4",
+                                       h5("Species:"),
+                                       c("1",
+                                         "2")
+                                     )),
+
+                              column(
+                                6,
+                                numericInput(
+                                  "num_plot_tab4",
+                                  h5("Plots"),
+                                  value = 100,
+                                  step = 50
+                                )
+                              )),
+
+                     fluidRow(column(
+                       6,
+                       numericInput(
+                         "con_com_tab4",
+                         h5("Conspecific competition (a):"),
+                         value = 0.01,
+                         min = 0,
+                         max = 1,
+                         step = 0.001
+                       )
+                     ),
+
+                     column(6,
+                            uiOutput("hetero_tab4"))),
+
+                     fluidRow(column(
+                       6,
+                       numericInput(
+                         "obs_err_tab4",
+                         h5("Observation error step"),
+                         value = 0,
+                         step = 1,
+                         min = 0,
+                         max = 10
+                       )
+                     ),
+
+                     column(
+                       6,
+                       numericInput(
+                         "growth_rate_tab4",
+                         h5("Growth rate"),
+                         value = 1.1,
+                         step = 0.1
+                       )
+                     )),
+
+
+                     fluidRow(column(
+                       6,
+                       numericInput(
+                         "st_portion_tab4",
+                         h5("Stay rate"),
+                         value = 0.1,
+                         step = 0.1,
+                         min = 0,
+                         max = 1
+                       )
+                     ),
+
+                     column(
+                       6,
+
+                       numericInput(
+                         "surv_rate_tab4",
+                         h5("Survival rate"),
+                         value = 0.5,
+                         step = 0.1,
+                         min = 0,
+                         max = 1
+                       )
+
+                     )),
+
+                     fluidRow(column(
+                       12,
+                       sliderInput(
+                         "sim_time_tab4",
+                         label = h5("Selec simulating time"),
+                         min = 5,
+                         max = 15,
+                         value = 10,
+                         width = 300
+                       )
+                     )),
+
+                     fluidRow(column(
+                       12,
+                       selectInput("models_tab4",
+                                   "Simulation model:",
+                                   c("Ricker" = "ricker")),
+                       br(),
+                       actionButton("go_tab4", "Simulate")
+                     ))
+
+                   )
+                 ),
+
+                 column(
+                   width = 9,
+                   box(
+                     title = "Bias vs. Observation error",
+                     status = "info",
+                     collapsible = TRUE,
+                     solidHeader = TRUE,
+                     width = 12,
+                     # Output: biasobsplot ----
+                     plotlyOutput(outputId = "biasobsplot")
                    ),
-                   helpText(h3('Basic functions')),
-                   helpText(
-                     h4(
-                       '-- Simulating plant communities under a variety of growth models.\n'
-                     )
-                   ),
-                   helpText(h4(
-                     '-- Inferring model parameters using linear regression.\n'
-                   )),
-                   helpText(
-                     h4(
-                       '-- Analyzing bias by tuning interaction coefficients, observation error, and dipersal rate, etc.\n'
-                     )
+                   box(
+                     title = "Bias vs. Observation error fixing growth rate",
+                     status = "info",
+                     collapsible = TRUE,
+                     solidHeader = TRUE,
+                     width = 12,
+                     # Output: biasobsplotfixing ----
+                     plotlyOutput(outputId = "biasobsplotfixing")
                    )
                  )
 
                )),
 
-      # correlation tab
+      # correlation tab: tab 5
       tabPanel(title = "Correlation",
                fluidRow(
                  column(
                    10,
                    offset = 1,
-                   helpText(h2('About')),
+                   helpText(h2('Under construction...')),
                    helpText(
                      h4(
-                       'This app is created by Liang Xu at Oxford, initiated by exploring a number of factors that
-                      influence on detecting density dependence in plant communities.'
-                     )
-                   ),
-                   helpText(h3('Basic functions')),
-                   helpText(
-                     h4(
-                       '-- Simulating plant communities under a variety of growth models.\n'
-                     )
-                   ),
-                   helpText(h4(
-                     '-- Inferring model parameters using linear regression.\n'
-                   )),
-                   helpText(
-                     h4(
-                       '-- Analyzing bias by tuning interaction coefficients, observation error, and dipersal rate, etc.\n'
+                       ''
                      )
                    )
                  )
@@ -525,8 +686,8 @@ body <- dashboardBody(### changing theme
                    helpText(h3('Bug report')),
                    helpText(
                      h4(
-                       '-- Feel free to use the app. If you encouter bugs, please report by sending emails to xl0418@gmail.com
-                        or open an issue at https://github.com/xl0418/PlantSimShiny.'
+                       '-- Feel free to use the app. If you encounter bugs, please report by sending emails to xl0418@gmail.com
+                        or opening an issue at https://github.com/xl0418/PlantSimShiny.'
                      )
                    )
                  )
@@ -793,6 +954,71 @@ server <- function(input, output, session) {
 
   output$biasstayplotfixing <- renderPlotly({
     biasstay_plot(model_paras_tab3()$paras)[[2]]
+
+  })
+
+  output$glodisplot <- renderPlotly({
+    biasstay_plot(model_paras_tab3()$paras)[[3]]
+
+  })
+
+  # plot 1 on Tab observation error tab 4
+
+  output$hetero_tab4 = renderUI({
+    req(input$num_spe_tab4) # this makes sure Shiny waits until input$num_spe has been supplied. Avoids nasty error messages
+    if (input$num_spe_tab4 == "2") {
+      numericInput(
+        inputId = "hetero_com_tab4",
+        label = h5("Heterospecific competition (b):"),
+        value = 0.01,
+        min = 0,
+        max = 1,
+        step = 0.01# condition on the state
+      )
+    }
+
+  })
+
+  parasInput_tab4 <- reactiveValues(argu = NULL)
+
+  model_paras_tab4 <- eventReactive(input$go_tab4, {
+    parasInput_tab4$argu <- c(
+      input$num_plot_tab4,
+      as.numeric(input$num_spe_tab4),
+      input$sim_time_tab4,
+      input$growth_rate_tab4,
+      input$st_portion_tab4,
+      input$surv_rate_tab4,
+      input$obs_err_tab4,
+      input$con_com_tab4,
+      input$hetero_com_tab4
+    )
+    if (is.null(parasInput_tab4$argu)) {
+      paras = c(
+        input$num_plot_tab4,
+        as.numeric(input$num_spe_tab4),
+        input$sim_time_tab4,
+        input$growth_rate_tab4,
+        input$st_portion_tab4,
+        input$surv_rate_tab4,
+        input$obs_err_tab4,
+        input$con_com_tab4,
+        input$hetero_com_tab4
+      )
+
+    } else {
+      paras <- parasInput_tab4$argu
+    }
+    list(paras = paras)
+  })
+
+  output$biasobsplot <- renderPlotly({
+    biasobs_plot(model_paras_tab4()$paras)[[1]]
+
+  })
+
+  output$biasobsplotfixing <- renderPlotly({
+    biasobs_plot(model_paras_tab4()$paras)[[2]]
 
   })
 

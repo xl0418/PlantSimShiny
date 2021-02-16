@@ -11,21 +11,28 @@ source('PlantSim_sim.R', echo=TRUE)
 #   input$hetero_com_tab3
 # )
 
-biasstay_plot <- function(paras_biasstay) {
+biasobs_plot <- function(paras_biasobs) {
   sim_result_list <- list()
   list_count = 1
-  paras <- paras_biasstay
-  stayrate_group <- seq(0, 1, paras_biasstay[5])
-  stayrate_group_names <- paste("SR ", stayrate_group)
+  num_sims <- 8
+  paras <- paras_biasobs
+  obserror_group <- seq(0, num_sims * paras_biasobs[7], paras_biasobs[7])
+  if (length(obserror_group) == 1) {
+    obserror_group <- rep(0, num_sims)
+    obserror_group_names <- paste("Obs err ", obserror_group, "rep ", c(1:num_sims))
 
-  true.paras <- c(paras_biasstay[6],
-                  paras_biasstay[4],
-                  paras_biasstay[8],
-                  paras_biasstay[9])
+  } else {
+    obserror_group_names <- paste("Obs err ", obserror_group)
+  }
+
+  true.paras <- c(paras_biasobs[6],
+                  paras_biasobs[4],
+                  paras_biasobs[8],
+                  paras_biasobs[9])
   surv_rate <- true.paras[1]
   growth_rate <- true.paras[2]
-  for (st_rate in stayrate_group) {
-    paras[5] <- st_rate
+  for (obserr in obserror_group) {
+    paras[7] <- obserr
     sim_result_list[[list_count]] <- PlantSim_sim(paras)
     list_count <- list_count + 1
   }
@@ -39,7 +46,7 @@ biasstay_plot <- function(paras_biasstay) {
 
   coefs <- NULL
   corr <- NULL
-  nspe <- paras_biasstay[2]
+  nspe <- paras_biasobs[2]
   if ( nspe == 1) {
     for (sim_result in sim_result_list) {
       # remove the data with 0 plants
@@ -91,7 +98,9 @@ biasstay_plot <- function(paras_biasstay) {
   }
 
   coef_dataframe <- data.frame(coefs)
-  coef_dataframe$group <- rep(stayrate_group_names, each = length(time_snaps))
+  coef_dataframe$group <- rep(obserror_group_names, each = length(time_snaps))
+  coef_dataframe$group <- factor(coef_dataframe$group,
+                     levels = obserror_group_names)
 
   fig1 <- plot_ly(coef_dataframe, x = ~Times,
                   y = ~Growth.rate,
@@ -209,8 +218,9 @@ biasstay_plot <- function(paras_biasstay) {
 
 
   coef_fix_dataframe <- data.frame(coefs_fix)
-  coef_fix_dataframe$group <- rep(stayrate_group_names, each = length(time_snaps))
-
+  coef_fix_dataframe$group <- rep(obserror_group_names, each = length(time_snaps))
+  coef_fix_dataframe$group <- factor(coef_fix_dataframe$group,
+                                 levels = obserror_group_names)
 
 
   if (nspe == 1) {
@@ -270,60 +280,7 @@ biasstay_plot <- function(paras_biasstay) {
     legend = list(x = 0.4, y = -0.2, orientation = 'h'))
 
 
-  # Global dispersal check plot 3
 
-
-  coefs_gd <- NULL
-  for (sim_result in sim_result_list) {
-    # remove the data with 0 plants
-    row_sub = which(apply(sim_result, 1, function(row) all(row > 0 )))
-    ##Subset as usual
-    sim_result <- sim_result[row_sub,,, drop = FALSE]
-    for (time_snap in time_snaps) {
-      data_x <- sim_result[, 1, time_snap[1]]
-      data_y <- sim_result[, 1, time_snap[2]]
-
-      lmodel <- lm(log(data_y / data_x) ~ log(data_x))
-      coefs_gd <- rbind(coefs_gd, c(coef(lmodel)[2]))
-    }
-  }
-
-
-  # correct the estimated growth rate
-  coefs_gd <- cbind(c(1:(tend - 1)), coefs_gd)
-
-
-  colnames(coefs_gd) <- c("Times", "a")
-
-
-  coefs_gd_dataframe <- data.frame(coefs_gd)
-  coefs_gd_dataframe$group <- rep(stayrate_group_names, each = length(time_snaps))
-
-  fig1_gd <- plot_ly(coefs_gd_dataframe, x = ~Times,
-                  y = ~a,
-                  split = ~group,
-                  legendgroup= ~group)
-  fig1_gd <- fig1_gd %>% add_lines(name = ~group,
-                             color = ~group,
-                             colors = "PiYG")
-  fig1_gd <- fig1_gd %>% add_lines(y = -1,
-                             line = list(color = "red", dash = "dash"),
-                             showlegend = F)
-  fig1_gd <- fig1_gd %>%
-    layout(annotations = list(x = 0.2 , y = 1.05, text = "Slope", showarrow = F,
-                              xref='paper', yref='paper'))
-
-
-
-  fig_inf3 <- fig1_gd %>% layout(
-    xaxis = list(title = "Years"),
-    yaxis = list (title = "Estimates"),
-    legend = list(x = 0.4, y = -0.2, orientation = 'h'))
-
-
-
-
-
-  return(list(fig_inf1, fig_inf2, fig_inf3))
+  return(list(fig_inf1, fig_inf2))
 
 }

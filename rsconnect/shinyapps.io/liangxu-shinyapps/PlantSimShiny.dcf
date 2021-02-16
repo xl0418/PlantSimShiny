@@ -1,0 +1,12 @@
+name: PlantSimShiny
+title: PlantSimShiny
+username:
+account: liangxu-shinyapps
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3644961
+bundleId: 4230623
+url: https://liangxu-shinyapps.shinyapps.io/PlantSimShiny/
+when: 1613493212.91579
+asMultiple: FALSE
+asStatic: FALSE

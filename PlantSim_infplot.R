@@ -4,6 +4,8 @@ PlantSim_infplot <- function(sim_result, true.paras) {
   tend <- dim(sim_result)[3]
   surv_rate <- true.paras[1]
   growth_rate <- true.paras[2]
+  con_value <- true.paras[3]
+  heter_value <- true.paras[4]
   # Inference plots
   time_snaps <- list()
   for (i in c(1:(tend - 1))) {
@@ -53,14 +55,8 @@ PlantSim_infplot <- function(sim_result, true.paras) {
 
   if (nspe == 1) {
     colnames(coefs) <- c("Times", "Growth rate", "a")
-    # true parameters
-    true_para <- data.frame(values = true.paras[2:3],
-                            names = c("growth rate", "a"))
   } else {
     colnames(coefs) <- c("Times", "Growth rate", "a", "b", "corr")
-    # true parameters
-    true_para <- data.frame(values = c(true.paras[2:4], 0),
-                            names = c("growth rate", "a", "b", "corr"))
   }
 
 
@@ -68,17 +64,17 @@ PlantSim_infplot <- function(sim_result, true.paras) {
 
   fig1 <- plot_ly(coef_dataframe, x = ~Times, y = ~Growth.rate)
   fig1 <- fig1 %>% add_lines(name = ~"Est. growth rate")
-  fig1 <- fig1 %>% add_lines(y = true.paras[1], line = list(color = "red", dash = "dash"), name = "True growth rate")
+  fig1 <- fig1 %>% add_lines(y = growth_rate, line = list(color = "red", dash = "dash"), name = "True growth rate")
   fig2 <- plot_ly(coef_dataframe, x = ~Times, y = ~a)
   fig2 <- fig2 %>% add_lines(name = ~"Est. a")
-  fig2 <- fig2 %>% add_lines(y = true.paras[2], line = list(color = "red", dash = "dash"), name = "True a")
+  fig2 <- fig2 %>% add_lines(y = con_value, line = list(color = "red", dash = "dash"), name = "True a")
 
   if (nspe == 1) {
     fig_inf1 <- subplot(fig1, fig2)
   } else {
     fig3 <- plot_ly(coef_dataframe, x = ~Times, y = ~b)
     fig3 <- fig3 %>% add_lines(name = ~"Est. b")
-    fig3 <- fig3 %>% add_lines(y = true.paras[3], line = list(color = "red", dash = "dash"), name = "True b")
+    fig3 <- fig3 %>% add_lines(y = heter_value, line = list(color = "red", dash = "dash"), name = "True b")
     fig_inf1 <- subplot(fig1, fig2, fig3)
 
   }
@@ -125,14 +121,8 @@ PlantSim_infplot <- function(sim_result, true.paras) {
 
   if (nspe == 1) {
     colnames(coefs_fix) <- c("Times",  "a")
-    # true parameters
-    true_para_fix <- data.frame(values = true.paras[2],
-                            names = c("a"))
   } else {
     colnames(coefs_fix) <- c("Times", "a", "b")
-    # true parameters
-    true_para_fix <- data.frame(values = true.paras[2:3],
-                            names = c( "a", "b"))
   }
 
 
@@ -140,14 +130,14 @@ PlantSim_infplot <- function(sim_result, true.paras) {
 
   fig1_fix <- plot_ly(coef_fix_dataframe, x = ~Times, y = ~a)
   fig1_fix <- fig1_fix %>% add_lines(name = ~"Est. a", line = list(color = "green"))
-  fig1_fix <- fig1_fix %>% add_lines(y = true.paras[2], line = list(color = "red", dash = "dash"), name = "True a")
+  fig1_fix <- fig1_fix %>% add_lines(y = con_value, line = list(color = "red", dash = "dash"), name = "True a")
 
   if (nspe == 1) {
     fig_inf2 <- fig1_fix
   } else {
     fig2_fix <- plot_ly(coef_fix_dataframe, x = ~Times, y = ~b)
     fig2_fix <- fig2_fix %>% add_lines(name = ~"Est. b", line = list(color = "purple"))
-    fig2_fix <- fig2_fix %>% add_lines(y = true.paras[3], line = list(color = "red", dash = "dash"), name = "True b")
+    fig2_fix <- fig2_fix %>% add_lines(y = heter_value, line = list(color = "red", dash = "dash"), name = "True b")
     fig_corr <- plot_ly(coef_dataframe, x = ~Times, y = ~corr)
     fig_corr <- fig_corr %>% add_lines(name = ~"corr")
     fig_corr <- fig_corr %>% add_lines(y = 0, line = list(color = "red", dash = "dot"), name = "No Corr")
@@ -159,8 +149,6 @@ PlantSim_infplot <- function(sim_result, true.paras) {
     xaxis = list(title = "Years"),
     yaxis = list (title = "Estimates"),
     legend = list(x = 0.4, y = -0.2, orientation = 'h'))
-
-
 
   return(list(fig_inf1, fig_inf2))
 }
