@@ -521,6 +521,13 @@ body <- dashboardBody(### changing theme
                      h4(
                        '-- Analyzing bias by tuning interaction coefficients, observation error, and dipersal rate, etc.\n'
                      )
+                   ),
+                   helpText(h3('Bug report')),
+                   helpText(
+                     h4(
+                       '-- Feel free to use the app. If you encouter bugs, please report by sending emails to xl0418@gmail.com
+                        or open an issue at https://github.com/xl0418/PlantSimShiny.'
+                     )
                    )
                  )
 
