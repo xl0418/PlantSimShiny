@@ -1,5 +1,6 @@
 # PlantSimShiny
  Simulation and parameter inference visulization on top of the project "Bias in detecting density dependence" at the department of Plant Sciences, Oxford. 
+ The app can be found [HERE](https://liangxu-shinyapps.shinyapps.io/PlantSimShiny/).
  
  # Baisc functions
  -- Simulation of plant communities, including dispersal, density dependence;
