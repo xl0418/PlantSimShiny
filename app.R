@@ -7,11 +7,13 @@ library(dashboardthemes)
 library(shinyBS)
 library(icon)
 library(PlantSim)
+
 source('PlantSIm_plot.R', echo = TRUE)
 source('PlantSim_sim.R', echo = TRUE)
 source('PlantSim_infplot.R', echo = TRUE)
 source('PlantSim_biasstayplot.R', echo = TRUE)
 source('PlantSim_biasobsplot.R', echo=TRUE)
+source('PlantSim_biasmisheteroplot.R', echo=TRUE)
 # Compute the current date
 
 # Design the header ----
@@ -640,21 +642,176 @@ body <- dashboardBody(### changing theme
 
                )),
 
-      # correlation tab: tab 5
-      tabPanel(title = "Correlation",
+      # misidentification tab: tab 5
+      tabPanel(title = "Misidentification",
                fluidRow(
-                 column(
-                   10,
-                   offset = 1,
-                   helpText(h2('Under construction...')),
+                 box(
+                   title = 'If we misidentify some competitors, what do we expect for the bias?',
+                   status = "info",
+                   collapsible = TRUE,
+                   solidHeader = TRUE,
+                   width = 12,
+
                    helpText(
                      h4(
-                       ''
+                       'In this tab, we explore when the system is consisting of multiple competitors
+                       what bias will occur if only fitting on conpecifics data. For example, we simulate
+                       the plant community with two species. When making inference, we only use the conspecific species
+                       as if we haven\'t identified the heterspecifics.'
                      )
+                   )
+
+                 )
+               ),
+               fluidRow(
+                 column(
+                   width = 3,
+                   box(
+                     title = "Parameter settings",
+                     status = "danger",
+                     solidHeader = TRUE,
+                     collapsible = TRUE,
+                     width = 12,
+                     fluidRow(column(6,
+                                     selectInput(
+                                       "num_spe_tab5",
+                                       h5("Species:"),
+                                       c(
+                                         "2")
+                                     )),
+
+                              column(
+                                6,
+                                numericInput(
+                                  "num_plot_tab5",
+                                  h5("Plots"),
+                                  value = 100,
+                                  step = 50
+                                )
+                              )),
+
+                     fluidRow(column(
+                       6,
+                       numericInput(
+                         "con_com_tab5",
+                         h5("Conspecific competition (a):"),
+                         value = 0.01,
+                         min = 0,
+                         max = 1,
+                         step = 0.001
+                       )
+                     ),
+
+                     column(
+                       6,
+                       numericInput(
+                         "hetero_com_tab5",
+                         h5("Heterospecific competition (b):"),
+                         value = 0.01,
+                         min = 0,
+                         max = 1,
+                         step = 0.001
+                       )
+                     )
+                     ),
+
+                     fluidRow(column(
+                       6,
+                       numericInput(
+                         "obs_err_tab5",
+                         h5("Observation error step"),
+                         value = 0,
+                         step = 0.1,
+                         min = 0,
+                         max = 1
+                       )
+                     ),
+
+                     column(
+                       6,
+                       numericInput(
+                         "growth_rate_tab5",
+                         h5("Growth rate"),
+                         value = 1.1,
+                         step = 0.1
+                       )
+                     )),
+
+
+                     fluidRow(column(
+                       6,
+                       numericInput(
+                         "st_portion_tab5",
+                         h5("Stay rate"),
+                         value = 0.1,
+                         step = 0.1,
+                         min = 0,
+                         max = 1
+                       )
+                     ),
+
+                     column(
+                       6,
+
+                       numericInput(
+                         "surv_rate_tab5",
+                         h5("Survival rate"),
+                         value = 0.5,
+                         step = 0.1,
+                         min = 0,
+                         max = 1
+                       )
+
+                     )),
+
+                     fluidRow(column(
+                       12,
+                       sliderInput(
+                         "sim_time_tab5",
+                         label = h5("Selec simulating time"),
+                         min = 5,
+                         max = 15,
+                         value = 10,
+                         width = 300
+                       )
+                     )),
+
+                     fluidRow(column(
+                       12,
+                       selectInput("models_tab5",
+                                   "Simulation model:",
+                                   c("Ricker" = "ricker")),
+                       br(),
+                       actionButton("go_tab5", "Simulate")
+                     ))
+
+                   )
+                 ),
+
+                 column(
+                   width = 9,
+                   box(
+                     title = "Bias when misidentifying heterospecifics",
+                     status = "info",
+                     collapsible = TRUE,
+                     solidHeader = TRUE,
+                     width = 12,
+                     # Output: biasmisheteroplot ----
+                     plotlyOutput(outputId = "biasmisheteroplot")
+                   ),
+                   box(
+                     title = "Bias when misidentifying heterospecifics and fixing growth rate",
+                     status = "info",
+                     collapsible = TRUE,
+                     solidHeader = TRUE,
+                     width = 12,
+                     # Output: biasmisheteroplotfixing ----
+                     plotlyOutput(outputId = "biasmisheteroplotfixing")
                    )
                  )
 
-               )),
+               )
+               ),
 
       # About tab
       tabPanel(title = "About",
@@ -1019,6 +1176,52 @@ server <- function(input, output, session) {
 
   output$biasobsplotfixing <- renderPlotly({
     biasobs_plot(model_paras_tab4()$paras)[[2]]
+
+  })
+
+
+  # Misidentification tab: tab 5
+
+  parasInput_tab5 <- reactiveValues(argu = NULL)
+
+  model_paras_tab5 <- eventReactive(input$go_tab5, {
+    parasInput_tab5$argu <- c(
+      input$num_plot_tab5,
+      as.numeric(input$num_spe_tab5),
+      input$sim_time_tab5,
+      input$growth_rate_tab5,
+      input$st_portion_tab5,
+      input$surv_rate_tab5,
+      input$obs_err_tab5,
+      input$con_com_tab5,
+      input$hetero_com_tab5
+    )
+    if (is.null(parasInput_tab5$argu)) {
+      paras = c(
+        input$num_plot_tab5,
+        as.numeric(input$num_spe_tab5),
+        input$sim_time_tab5,
+        input$growth_rate_tab5,
+        input$st_portion_tab5,
+        input$surv_rate_tab5,
+        input$obs_err_tab5,
+        input$con_com_tab5,
+        input$hetero_com_tab5
+      )
+
+    } else {
+      paras <- parasInput_tab5$argu
+    }
+    list(paras = paras)
+  })
+
+  output$biasmisheteroplot <- renderPlotly({
+    biasmisheteroplot(model_paras_tab5()$paras)[[1]]
+
+  })
+
+  output$biasmisheteroplotfixing <- renderPlotly({
+    biasmisheteroplot(model_paras_tab5()$paras)[[2]]
 
   })
 
