@@ -20,8 +20,8 @@ biasstay_plot <- function(paras_biasstay) {
 
   true.paras <- c(paras_biasstay[6],
                   paras_biasstay[4],
-                  paras_biasstay[8],
-                  paras_biasstay[9])
+                  paras_biasstay[9],
+                  paras_biasstay[10])
   surv_rate <- true.paras[1]
   growth_rate <- true.paras[2]
   for (st_rate in stayrate_group) {

@@ -88,10 +88,11 @@ body <- dashboardBody(### changing theme
                        6,
                        numericInput(
                          "obs_err",
-                         h5("Observation error"),
+                         h5("Observation error rate"),
                          value = 0,
-                         step = 1,
-                         min = 0
+                         step = 0.02,
+                         min = 0,
+                         max = 1
                        )
                      ),
 
@@ -131,6 +132,19 @@ body <- dashboardBody(### changing theme
                        )
 
                      )),
+
+                     fluidRow(column(
+                       6,
+                       numericInput(
+                         "killrate",
+                         h5("Elimination rate"),
+                         value = 0.05,
+                         step = 0.01,
+                         min = 0,
+                         max = 1
+                       )
+                     )
+                     ),
 
                      fluidRow(column(
                        12,
@@ -375,8 +389,9 @@ body <- dashboardBody(### changing theme
                          "obs_err_tab3",
                          h5("Observation error"),
                          value = 0,
-                         step = 1,
-                         min = 0
+                         step = 0.01,
+                         min = 0,
+                         max = 1
                        )
                      ),
 
@@ -416,6 +431,19 @@ body <- dashboardBody(### changing theme
                        )
 
                      )),
+
+                     fluidRow(column(
+                       6,
+                       numericInput(
+                         "killrate_tab3",
+                         h5("Elimination rate"),
+                         value = 0.05,
+                         step = 0.01,
+                         min = 0,
+                         max = 1
+                       )
+                     )
+                     ),
 
                      fluidRow(column(
                        12,
@@ -552,9 +580,9 @@ body <- dashboardBody(### changing theme
                          "obs_err_tab4",
                          h5("Observation error step"),
                          value = 0,
-                         step = 1,
+                         step = 0.1,
                          min = 0,
-                         max = 10
+                         max = 1
                        )
                      ),
 
@@ -594,6 +622,20 @@ body <- dashboardBody(### changing theme
                        )
 
                      )),
+
+
+                     fluidRow(column(
+                       6,
+                       numericInput(
+                         "killrate_tab4",
+                         h5("Elimination rate"),
+                         value = 0.05,
+                         step = 0.01,
+                         min = 0,
+                         max = 1
+                       )
+                     )
+                     ),
 
                      fluidRow(column(
                        12,
@@ -764,6 +806,21 @@ body <- dashboardBody(### changing theme
                        )
 
                      )),
+
+
+                     fluidRow(column(
+                       6,
+                       numericInput(
+                         "killrate_tab5",
+                         h5("Elimination rate"),
+                         value = 0.05,
+                         step = 0.01,
+                         min = 0,
+                         max = 1
+                       )
+                     )
+                     ),
+
 
                      fluidRow(column(
                        12,
@@ -948,6 +1005,7 @@ server <- function(input, output, session) {
       input$st_portion,
       input$surv_rate,
       input$obs_err,
+      input$killrate,
       input$con_com,
       input$hetero_com
     )
@@ -961,6 +1019,7 @@ server <- function(input, output, session) {
           input$st_portion,
           input$surv_rate,
           input$obs_err,
+          input$killrate,
           input$con_com,
           input$hetero_com
         )
@@ -1083,6 +1142,7 @@ server <- function(input, output, session) {
       input$st_portion_tab3,
       input$surv_rate_tab3,
       input$obs_err_tab3,
+      input$killrate_tab3,
       input$con_com_tab3,
       input$hetero_com_tab3
     )
@@ -1095,6 +1155,7 @@ server <- function(input, output, session) {
         input$st_portion_tab3,
         input$surv_rate_tab3,
         input$obs_err_tab3,
+        input$killrate_tab3,
         input$con_com_tab3,
         input$hetero_com_tab3
       )
@@ -1148,6 +1209,7 @@ server <- function(input, output, session) {
       input$st_portion_tab4,
       input$surv_rate_tab4,
       input$obs_err_tab4,
+      input$killrate_tab4,
       input$con_com_tab4,
       input$hetero_com_tab4
     )
@@ -1160,6 +1222,7 @@ server <- function(input, output, session) {
         input$st_portion_tab4,
         input$surv_rate_tab4,
         input$obs_err_tab4,
+        input$killrate_tab4,
         input$con_com_tab4,
         input$hetero_com_tab4
       )
@@ -1194,6 +1257,7 @@ server <- function(input, output, session) {
       input$st_portion_tab5,
       input$surv_rate_tab5,
       input$obs_err_tab5,
+      input$killrate_tab5,
       input$con_com_tab5,
       input$hetero_com_tab5
     )
@@ -1206,6 +1270,7 @@ server <- function(input, output, session) {
         input$st_portion_tab5,
         input$surv_rate_tab5,
         input$obs_err_tab5,
+        input$killrate_tab5,
         input$con_com_tab5,
         input$hetero_com_tab5
       )

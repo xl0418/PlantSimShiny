@@ -9,18 +9,19 @@ PlantSim_sim <- function(paras) {
 
   st_portion <- paras[5]
   surv_rate <- paras[6]
+  obs_err_rate <- paras[7]
+  kill_rate <- paras[8]
 
   interaction_matrix <- matrix(0, nspe, nspe)
   if (nspe == 1) {
-    interaction_matrix[1, 1] <- paras[8]
+    interaction_matrix[1, 1] <- paras[9]
   } else {
-    interaction_matrix[1, 1] <- paras[8]
-    interaction_matrix[1, 2] <- paras[9]
-    interaction_matrix[2, 1] <- paras[9]
-    interaction_matrix[2, 2] <- paras[8]
+    interaction_matrix[1, 1] <- paras[9]
+    interaction_matrix[1, 2] <- paras[10]
+    interaction_matrix[2, 1] <- paras[10]
+    interaction_matrix[2, 2] <- paras[9]
   }
 
-  kill_rate <- paras[10]
 
   sim_result <- plantsim(
     nplot = nplot,
@@ -34,11 +35,16 @@ PlantSim_sim <- function(paras) {
     kill_rate = kill_rate
   )
 
-  sim_result <-
-    rtnorm(1,
-           mu = sim_result,
-           sd = sim_result * (1 - paras[7]),
-           lb = sim_result * (1 - paras[7]),
-           up = sim_result * (1 + paras[7]))
+  if (obs_err_rate != 0) {
+    sim_result <-
+      round(rtnorm(1,
+             mu = sim_result,
+             sd = pmax(sim_result * obs_err_rate, 1),
+             lb = sim_result * (1 - obs_err_rate),
+             ub = sim_result * (1 + obs_err_rate) ))
+    dim(sim_result) <- c(nplot, nspe, tend)
+  }
+
+
   return(sim_result)
 }

@@ -1,14 +1,15 @@
 source('PlantSim_sim.R', echo=TRUE)
 # paras = c(
-#   input$num_plot_tab3,
-#   as.numeric(input$num_spe_tab3),
-#   input$sim_time_tab3,
-#   input$growth_rate_tab3,
-#   input$st_portion_tab3,
-#   input$surv_rate_tab3,
-#   input$obs_err_tab3,
-#   input$con_com_tab3,
-#   input$hetero_com_tab3
+#1   input$num_plot_tab3,
+#2   as.numeric(input$num_spe_tab3),
+#3   input$sim_time_tab3,
+#4   input$growth_rate_tab3,
+#5   input$st_portion_tab3,
+#6   input$surv_rate_tab3,
+#7   input$obs_err_tab3,
+#8   input$killrate,
+#9   input$con_com_tab3,
+#10  input$hetero_com_tab3
 # )
 
 biasobs_plot <- function(paras_biasobs) {
@@ -16,19 +17,20 @@ biasobs_plot <- function(paras_biasobs) {
   list_count = 1
   num_sims <- 8
   paras <- paras_biasobs
-  obserror_group <- seq(0, num_sims * paras_biasobs[7], paras_biasobs[7])
-  if (length(obserror_group) == 1) {
+  obs_err_step <- paras_biasobs[7]
+  if (obs_err_step == 0) {
     obserror_group <- rep(0, num_sims)
     obserror_group_names <- paste("Obs err ", obserror_group, "rep ", c(1:num_sims))
 
   } else {
+    obserror_group <- seq(0, 1, paras_biasobs[7])
     obserror_group_names <- paste("Obs err ", obserror_group)
   }
 
   true.paras <- c(paras_biasobs[6],
                   paras_biasobs[4],
-                  paras_biasobs[8],
-                  paras_biasobs[9])
+                  paras_biasobs[9],
+                  paras_biasobs[10])
   surv_rate <- true.paras[1]
   growth_rate <- true.paras[2]
   for (obserr in obserror_group) {
