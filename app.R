@@ -152,7 +152,7 @@ body <- dashboardBody(### changing theme
                          "sim_time",
                          label = h5("Selec simulating time"),
                          min = 5,
-                         max = 15,
+                         max = 30,
                          value = 10,
                          width = 300
                        )
@@ -451,7 +451,7 @@ body <- dashboardBody(### changing theme
                          "sim_time_tab3",
                          label = h5("Selec simulating time"),
                          min = 5,
-                         max = 15,
+                         max = 30,
                          value = 10,
                          width = 300
                        )
@@ -643,7 +643,7 @@ body <- dashboardBody(### changing theme
                          "sim_time_tab4",
                          label = h5("Selec simulating time"),
                          min = 5,
-                         max = 15,
+                         max = 30,
                          value = 10,
                          width = 300
                        )
@@ -828,7 +828,7 @@ body <- dashboardBody(### changing theme
                          "sim_time_tab5",
                          label = h5("Selec simulating time"),
                          min = 5,
-                         max = 15,
+                         max = 30,
                          value = 10,
                          width = 300
                        )
