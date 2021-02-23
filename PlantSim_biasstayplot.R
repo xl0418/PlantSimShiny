@@ -117,6 +117,9 @@ biasstay_plot <- function(paras_biasstay) {
     fig2 <- fig2 %>% add_lines(y = true.paras[3],
                                line = list(color = "red", dash = "dash"),
                                showlegend = F)
+    fig2 <- fig2 %>% add_lines(y = true.paras[3]/(surv_rate),
+                               line = list(color = "grey", dash = "dash"),
+                               showlegend = F)
     fig2 <- fig2 %>%
       layout(annotations = list(x = 0.2 , y = 1.05, text = "a", showarrow = F,
                                 xref='paper', yref='paper'))
@@ -222,6 +225,10 @@ biasstay_plot <- function(paras_biasstay) {
                                        line = list(color = "red",
                                                    dash = "dash"),
                                        showlegend = F)
+
+    fig1_fix <- fig1_fix %>% add_lines(y = true.paras[3]/(surv_rate),
+                                    line = list(color = "grey", dash = "dash"),
+                                    showlegend = F)
     fig1_fix <- fig1_fix %>%
       layout(annotations = list(x = 0.2 , y = 1.05, text = "a", showarrow = F,
                                 xref='paper', yref='paper'))
