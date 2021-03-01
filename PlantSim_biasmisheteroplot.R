@@ -27,13 +27,13 @@ biasmisheteroplot <- function(paras_biasmishetero) {
 
   true.paras <- c(paras_biasmishetero[6],
                   paras_biasmishetero[4],
-                  paras_biasmishetero[8],
-                  paras_biasmishetero[9])
+                  paras_biasmishetero[9],
+                  paras_biasmishetero[10])
   surv_rate <- true.paras[1]
   growth_rate <- true.paras[2]
   for (obserr in obserror_group) {
     paras[7] <- obserr
-    sim_result_list[[list_count]] <- PlantSim_sim(paras)
+    sim_result_list[[list_count]] <- PlantSim_sim(paras)$all
     list_count <- list_count + 1
   }
 

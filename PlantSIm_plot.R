@@ -1,4 +1,5 @@
 PlantSim_plot <- function(sim_result) {
+  sim_result <- sim_result$all
   nplot <- dim(sim_result)[1]
   nspe <- dim(sim_result)[2]
   tend <- dim(sim_result)[3]

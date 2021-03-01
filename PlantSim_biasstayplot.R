@@ -1,14 +1,15 @@
 source('PlantSim_sim.R', echo=TRUE)
 # paras = c(
-#   input$num_plot_tab3,
-#   as.numeric(input$num_spe_tab3),
-#   input$sim_time_tab3,
-#   input$growth_rate_tab3,
-#   input$st_portion_tab3,
-#   input$surv_rate_tab3,
-#   input$obs_err_tab3,
-#   input$con_com_tab3,
-#   input$hetero_com_tab3
+#1   input$num_plot_tab3,
+#2   as.numeric(input$num_spe_tab3),
+#3   input$sim_time_tab3,
+#4   input$growth_rate_tab3,
+#5   input$st_portion_tab3,
+#6   input$surv_rate_tab3,
+#7   input$obs_err_tab3,
+#8   input$killrate,
+#9   input$con_com_tab3,
+#10  input$hetero_com_tab3
 # )
 
 biasstay_plot <- function(paras_biasstay) {
@@ -16,6 +17,9 @@ biasstay_plot <- function(paras_biasstay) {
   list_count = 1
   paras <- paras_biasstay
   stayrate_group <- seq(0, 1, paras_biasstay[5])
+  if (stayrate_group[length(stayrate_group)] != 1) {
+    stayrate_group <- c(stayrate_group, 1)
+  }
   stayrate_group_names <- paste("SR ", stayrate_group)
 
   true.paras <- c(paras_biasstay[6],
@@ -26,9 +30,13 @@ biasstay_plot <- function(paras_biasstay) {
   growth_rate <- true.paras[2]
   for (st_rate in stayrate_group) {
     paras[5] <- st_rate
-    sim_result_list[[list_count]] <- PlantSim_sim(paras)
+    sim_result_list[[list_count]] <- PlantSim_sim(paras)$all
     list_count <- list_count + 1
   }
+
+  sr0_sim <- sim_result_list[[1]]
+  conspe_mean_time <- 1/apply(sr0_sim[,1,], 2, mean)
+
 
   time_snaps <- list()
   tend <- paras[3]
@@ -93,6 +101,10 @@ biasstay_plot <- function(paras_biasstay) {
   coef_dataframe <- data.frame(coefs)
   coef_dataframe$group <- rep(stayrate_group_names, each = length(time_snaps))
 
+  upper_df <- data.frame(Times = unique(coef_dataframe$Times),
+                         upper = conspe_mean_time[1:(length(conspe_mean_time) - 1)],
+                         group = "upper")
+
   fig1 <- plot_ly(coef_dataframe, x = ~Times,
                   y = ~Growth.rate,
                   split = ~group,
@@ -123,6 +135,12 @@ biasstay_plot <- function(paras_biasstay) {
     fig2 <- fig2 %>%
       layout(annotations = list(x = 0.2 , y = 1.05, text = "a", showarrow = F,
                                 xref='paper', yref='paper'))
+
+    fig2 <- fig2 %>%
+      add_trace(data = upper_df, y = ~upper,
+                type = "scatter", mode = "lines+markers",
+                line = list(color = "grey", dash = "dash"))
+
     fig_inf1 <- subplot(fig1, fig2)
 
   } else {
@@ -138,6 +156,12 @@ biasstay_plot <- function(paras_biasstay) {
     fig2 <- fig2 %>%
       layout(annotations = list(x = 0.2 , y = 1.05, text = "a", showarrow = F,
                                 xref='paper', yref='paper'))
+    fig2 <- fig2 %>%
+      add_trace(data = upper_df, y = ~upper,
+                type = "scatter", mode = "lines+markers",
+                line = list(color = "grey", dash = "dash"))
+
+
     fig3 <- plot_ly(coef_dataframe, x = ~Times, y = ~b, split = ~group,
                     legendgroup= ~group)
     fig3 <- fig3 %>% add_lines(name = ~group,

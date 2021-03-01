@@ -4,7 +4,7 @@ PlantSim_sim <- function(paras) {
   nplot <- paras[1] # the number of the plots
   nspe <- paras[2] # the number of the species
   tend <- paras[3] # the total time steps of simulation
-  ini_abundance <- matrix(runif(nplot * nspe, 1, 5), nplot, nspe)
+  ini_abundance <- matrix(runif(nplot * nspe, 10, 20), nplot, nspe)
   growth_rate <- paras[4]
 
   st_portion <- paras[5]
@@ -36,13 +36,13 @@ PlantSim_sim <- function(paras) {
   )
 
   if (obs_err_rate != 0) {
-    sim_result <-
+    sim_result$all <-
       round(rtnorm(1,
-             mu = sim_result,
-             sd = pmax(sim_result * obs_err_rate, 1),
-             lb = sim_result * (1 - obs_err_rate),
-             ub = sim_result * (1 + obs_err_rate) ))
-    dim(sim_result) <- c(nplot, nspe, tend)
+             mu = sim_result$all,
+             sd = pmax(sim_result$all * obs_err_rate, 1),
+             lb = sim_result$all * (1 - obs_err_rate),
+             ub = sim_result$all * (1 + obs_err_rate) ))
+    dim(sim_result$all) <- c(nplot, nspe, tend)
   }
 
 

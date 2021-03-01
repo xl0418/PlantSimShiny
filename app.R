@@ -1029,6 +1029,7 @@ server <- function(input, output, session) {
     }
     true.paras <- c(input$surv_rate,
                     input$growth_rate,
+                    input$st_portion,
                     input$con_com,
                     input$hetero_com)
     list(result = sim_result, trueparas = true.paras)

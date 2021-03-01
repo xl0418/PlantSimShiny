@@ -35,7 +35,7 @@ biasobs_plot <- function(paras_biasobs) {
   growth_rate <- true.paras[2]
   for (obserr in obserror_group) {
     paras[7] <- obserr
-    sim_result_list[[list_count]] <- PlantSim_sim(paras)
+    sim_result_list[[list_count]] <- PlantSim_sim(paras)$all
     list_count <- list_count + 1
   }
 
