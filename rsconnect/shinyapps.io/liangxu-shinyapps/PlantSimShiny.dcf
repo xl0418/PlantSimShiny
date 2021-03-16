@@ -5,8 +5,8 @@ account: liangxu-shinyapps
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3644961
-bundleId: 4266177
+bundleId: 4352419
 url: https://liangxu-shinyapps.shinyapps.io/PlantSimShiny/
-when: 1614170292.51217
+when: 1615893373.6981
 asMultiple: FALSE
 asStatic: FALSE

@@ -42,10 +42,9 @@ PlantSim_infplot <- function(sim_result, true.paras) {
                         var(sim_result[, 1, ts]))
   }
   liang_bias_value <-
-      # - (stay_rate + surv_rate * (1 - stay_rate)) / (stay_rate ^ 2 + surv_rate^2 * (1 - stay_rate)^2) *
-   -cov_liang_bias / var_liang_bias
+    stay_rate*con_value + (1 - stay_rate) /apply(sim_result[,1,], 2, mean)
 
-  liang_bias_df <- data.frame(Times = c(1:(tend - 1)),
+  liang_bias_df <- data.frame(Times = c(1:tend),
                               bias = liang_bias_value)
 
   # estimates for each time snap
@@ -81,8 +80,7 @@ PlantSim_infplot <- function(sim_result, true.paras) {
     coefs[, 3] <- -coefs[, 3]
   }
 
-  liang_bias_growth_value <- coefs[, 1] - log(stay_rate + surv_rate * (1-stay_rate))
-  liang_bias_df$growth <- liang_bias_growth_value
+
   # correct the estimated growth rate
   coefs[, 1] <- exp(coefs[, 1] - 1) / surv_rate
 
@@ -105,10 +103,6 @@ PlantSim_infplot <- function(sim_result, true.paras) {
       line = list(color = "red", dash = "dash"),
       name = "True growth rate"
     )
-  fig1 <- fig1 %>% add_trace(data = liang_bias_df,
-                             x = ~Times, y = ~ growth,
-                             type = "scatter", mode = "lines+markers",
-                             line = list(color = "yellow", dash = "dash"))
 
   fig2 <- plot_ly(coef_dataframe, x = ~ Times, y = ~ a)
   fig2 <- fig2 %>% add_lines(name = ~ "Est. a")

@@ -28,18 +28,20 @@ biasstay_plot <- function(paras_biasstay) {
                   paras_biasstay[10])
   surv_rate <- true.paras[1]
   growth_rate <- true.paras[2]
+  con_value <- true.paras[3]
+  tend <- paras[3]
+
+  upper_boundary <- NULL
   for (st_rate in stayrate_group) {
     paras[5] <- st_rate
     sim_result_list[[list_count]] <- PlantSim_sim(paras)$all
+    upper_boundary <- c(upper_boundary,
+                        st_rate*con_value + (1 - st_rate) /apply(sim_result_list[[list_count]][,1,1:(tend - 1)], 2, mean))
+
     list_count <- list_count + 1
   }
 
-  sr0_sim <- sim_result_list[[1]]
-  conspe_mean_time <- 1/apply(sr0_sim[,1,], 2, mean)
-
-
   time_snaps <- list()
-  tend <- paras[3]
   for (i in c(1:(tend - 1))) {
     time_snaps[[i]] <- c(i, i + 1)
   }
@@ -101,9 +103,9 @@ biasstay_plot <- function(paras_biasstay) {
   coef_dataframe <- data.frame(coefs)
   coef_dataframe$group <- rep(stayrate_group_names, each = length(time_snaps))
 
-  upper_df <- data.frame(Times = unique(coef_dataframe$Times),
-                         upper = conspe_mean_time[1:(length(conspe_mean_time) - 1)],
-                         group = "upper")
+  upper_df <- data.frame(Times = coef_dataframe$Times,
+                         upper = upper_boundary,
+                         group = coef_dataframe$group)
 
   fig1 <- plot_ly(coef_dataframe, x = ~Times,
                   y = ~Growth.rate,
@@ -129,16 +131,15 @@ biasstay_plot <- function(paras_biasstay) {
     fig2 <- fig2 %>% add_lines(y = true.paras[3],
                                line = list(color = "red", dash = "dash"),
                                showlegend = F)
-    fig2 <- fig2 %>% add_lines(y = true.paras[3]/(surv_rate),
-                               line = list(color = "grey", dash = "dash"),
-                               showlegend = F)
+
     fig2 <- fig2 %>%
       layout(annotations = list(x = 0.2 , y = 1.05, text = "a", showarrow = F,
                                 xref='paper', yref='paper'))
 
     fig2 <- fig2 %>%
       add_trace(data = upper_df, y = ~upper,
-                type = "scatter", mode = "lines+markers",
+                type = "scatter", mode = "lines+markers", split = ~group,
+                color = ~group,
                 line = list(color = "grey", dash = "dash"))
 
     fig_inf1 <- subplot(fig1, fig2)
