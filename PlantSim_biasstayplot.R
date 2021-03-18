@@ -29,14 +29,25 @@ biasstay_plot <- function(paras_biasstay) {
   surv_rate <- true.paras[1]
   growth_rate <- true.paras[2]
   con_value <- true.paras[3]
+  heter_value <- true.paras[4]
   tend <- paras[3]
-
-  upper_boundary <- NULL
+  nspe <- paras_biasstay[2]
+  upper_boundary_con <- NULL
   for (st_rate in stayrate_group) {
     paras[5] <- st_rate
     sim_result_list[[list_count]] <- PlantSim_sim(paras)$all
-    upper_boundary <- c(upper_boundary,
-                        st_rate*con_value + (1 - st_rate) /apply(sim_result_list[[list_count]][,1,1:(tend - 1)], 2, mean))
+    if (nspe == 1) {
+      upper_boundary_con <- c(upper_boundary_con,
+                              st_rate*con_value +
+                                (1 - st_rate) /apply(sim_result_list[[list_count]][,1,1:(tend - 1)], 2, mean))
+
+    }else {
+      upper_boundary_con <- c(upper_boundary_con,
+                              st_rate*con_value +
+                                (1 - st_rate) /apply(sim_result_list[[list_count]][,1,1:(tend - 1)], 2, mean))
+        # (1 +  st_rate * heter_value * apply(sim_result_list[[list_count]][,2,2:tend], 2, mean)))
+
+    }
 
     list_count <- list_count + 1
   }
@@ -49,7 +60,6 @@ biasstay_plot <- function(paras_biasstay) {
 
   coefs <- NULL
   corr <- NULL
-  nspe <- paras_biasstay[2]
   if ( nspe == 1) {
     for (sim_result in sim_result_list) {
       # remove the data with 0 plants
@@ -104,7 +114,7 @@ biasstay_plot <- function(paras_biasstay) {
   coef_dataframe$group <- rep(stayrate_group_names, each = length(time_snaps))
 
   upper_df <- data.frame(Times = coef_dataframe$Times,
-                         upper = upper_boundary,
+                         upper = upper_boundary_con,
                          group = coef_dataframe$group)
 
   fig1 <- plot_ly(coef_dataframe, x = ~Times,
@@ -159,9 +169,9 @@ biasstay_plot <- function(paras_biasstay) {
                                 xref='paper', yref='paper'))
     fig2 <- fig2 %>%
       add_trace(data = upper_df, y = ~upper,
-                type = "scatter", mode = "lines+markers",
+                type = "scatter", mode = "lines+markers", split = ~group,
+                color = ~group,
                 line = list(color = "grey", dash = "dash"))
-
 
     fig3 <- plot_ly(coef_dataframe, x = ~Times, y = ~b, split = ~group,
                     legendgroup= ~group)
