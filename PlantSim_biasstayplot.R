@@ -36,21 +36,14 @@ biasstay_plot <- function(paras_biasstay) {
   for (st_rate in stayrate_group) {
     paras[5] <- st_rate
     sim_result_list[[list_count]] <- PlantSim_sim(paras)$all
-    if (nspe == 1) {
-      upper_boundary_con <- c(upper_boundary_con,
-                              st_rate*con_value +
-                                (1 - st_rate) /apply(sim_result_list[[list_count]][,1,1:(tend - 1)], 2, mean))
-
-    }else {
-      upper_boundary_con <- c(upper_boundary_con,
-                              st_rate*con_value +
-                                (1 - st_rate) /apply(sim_result_list[[list_count]][,1,1:(tend - 1)], 2, mean))
-        # (1 +  st_rate * heter_value * apply(sim_result_list[[list_count]][,2,2:tend], 2, mean)))
-
-    }
 
     list_count <- list_count + 1
   }
+
+
+  upper_boundary_con <- 1 /apply(sim_result_list[[1]][,1,1:(tend - 1)], 2, mean)
+
+
 
   time_snaps <- list()
   for (i in c(1:(tend - 1))) {
@@ -113,9 +106,12 @@ biasstay_plot <- function(paras_biasstay) {
   coef_dataframe <- data.frame(coefs)
   coef_dataframe$group <- rep(stayrate_group_names, each = length(time_snaps))
 
-  upper_df <- data.frame(Times = coef_dataframe$Times,
+  upper_df <- data.frame(Times = unique(coef_dataframe$Times),
                          upper = upper_boundary_con,
-                         group = coef_dataframe$group)
+                         group = "upper")
+
+
+
 
   fig1 <- plot_ly(coef_dataframe, x = ~Times,
                   y = ~Growth.rate,
@@ -148,7 +144,7 @@ biasstay_plot <- function(paras_biasstay) {
 
     fig2 <- fig2 %>%
       add_trace(data = upper_df, y = ~upper,
-                type = "scatter", mode = "lines+markers", split = ~group,
+                type = "scatter", mode = "lines+markers",split = ~group,
                 color = ~group,
                 line = list(color = "grey", dash = "dash"))
 
