@@ -30,9 +30,7 @@ PlantSim_sim <- function(paras) {
     ini_abundance = ini_abundance,
     growth_rate = growth_rate,
     interaction_matrix = interaction_matrix,
-    st_portion = st_portion,
-    surv_rate = surv_rate,
-    kill_rate = kill_rate
+    st_portion = st_portion
   )
 
   if (obs_err_rate != 0) {
